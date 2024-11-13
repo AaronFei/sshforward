@@ -1,7 +1,6 @@
 package sshforward
 
 import (
-	"strings"
 	"sync"
 
 	"golang.org/x/crypto/ssh"
