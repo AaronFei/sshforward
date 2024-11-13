@@ -32,14 +32,14 @@ type StateEvent_t struct {
 	Msg   string
 }
 
-func (f *ForwardConfig_t) stateChange(newState forwardState_t, msg string) {
+func (f *forwardConfig_t) stateChange(newState forwardState_t, msg string) {
 	f.state = newState
 	select {
-	case f.EventNotify <- StateEvent_t{State: forwardStateString[newState], T: time.Now(), Msg: msg}:
+	case f.eventNotify <- StateEvent_t{State: forwardStateString[newState], T: time.Now(), Msg: msg}:
 	default:
 	}
 }
 
-func (f *ForwardConfig_t) EventNotifyChannel() <-chan StateEvent_t {
-	return f.EventNotify
+func (f *forwardConfig_t) EventNotifyChannel() <-chan StateEvent_t {
+	return f.eventNotify
 }

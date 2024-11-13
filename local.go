@@ -9,8 +9,8 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-func (f *ForwardConfig_t) remoteForwardToLocalListen(localPort, remotePort string) error {
-	tunnelAddr := f.TunnelAddr
+func (f *forwardConfig_t) remoteForwardToLocalListen(localPort, remotePort string) error {
+	tunnelAddr := f.tunnelAddr
 
 	client, err := ssh.Dial("tcp", tunnelAddr, f.sshConfig)
 	if err != nil {
@@ -49,7 +49,7 @@ func (f *ForwardConfig_t) remoteForwardToLocalListen(localPort, remotePort strin
 	}
 }
 
-func (f *ForwardConfig_t) forward(ctx context.Context, localConn net.Conn, sshConn *ssh.Client, remoteAddr string) {
+func (f *forwardConfig_t) forward(ctx context.Context, localConn net.Conn, sshConn *ssh.Client, remoteAddr string) {
 	remoteConn, err := sshConn.DialContext(ctx, "tcp", remoteAddr)
 	if err != nil {
 		localConn.Close()
