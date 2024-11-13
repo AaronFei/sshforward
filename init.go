@@ -29,11 +29,7 @@ func CreateForward() *ForwardConfig_t {
 
 func (f *ForwardConfig_t) ConfigTunnel(sshConfig *ssh.ClientConfig, tunnelAddr string, tunnelPort string) {
 	f.sshConfig = sshConfig
-	if strings.Contains(tunnelAddr, ":") {
-		f.TunnelAddr = tunnelAddr
-	} else {
-		f.TunnelAddr = tunnelAddr + ":" + tunnelPort
-	}
+	f.TunnelAddr = tunnelAddr + ":" + tunnelPort
 
 	f.stateChange(FORWARD_STATE_CONFIGURED, "")
 }
