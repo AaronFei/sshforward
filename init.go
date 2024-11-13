@@ -6,7 +6,7 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-type forwardConfig_t struct {
+type ForwardConfig_t struct {
 	state forwardState_t
 	wg    sync.WaitGroup
 
@@ -15,8 +15,8 @@ type forwardConfig_t struct {
 	eventNotify chan StateEvent_t
 }
 
-func CreateForward() *forwardConfig_t {
-	return &forwardConfig_t{
+func CreateForward() *ForwardConfig_t {
+	return &ForwardConfig_t{
 		state: FORWARD_STATE_NONE,
 		wg:    sync.WaitGroup{},
 
@@ -26,7 +26,7 @@ func CreateForward() *forwardConfig_t {
 	}
 }
 
-func (f *forwardConfig_t) ConfigTunnel(sshConfig *ssh.ClientConfig, tunnelAddr string, tunnelPort string) {
+func (f *ForwardConfig_t) ConfigTunnel(sshConfig *ssh.ClientConfig, tunnelAddr string, tunnelPort string) {
 	f.sshConfig = sshConfig
 	f.tunnelAddr = tunnelAddr + ":" + tunnelPort
 

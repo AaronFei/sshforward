@@ -13,11 +13,11 @@ const (
 	FORWARD_TYPE_REMOTE_TO_LOCAL_LISTEN
 )
 
-func (f *forwardConfig_t) Wait() {
+func (f *ForwardConfig_t) Wait() {
 	f.wg.Wait()
 }
 
-func (f *forwardConfig_t) Service(t ForwardType_t, remotePort, localPort string) {
+func (f *ForwardConfig_t) Service(t ForwardType_t, remotePort, localPort string) {
 	if f.state != FORWARD_STATE_CONFIGURED || f.state == FORWARD_STATE_STOPPED {
 		f.stateChange(FORWARD_STATE_ERROR, fmt.Sprintf("Not at configured state or stopped state"))
 		return
@@ -28,7 +28,7 @@ func (f *forwardConfig_t) Service(t ForwardType_t, remotePort, localPort string)
 	go f.forwardService(t, remotePort, localPort)
 }
 
-func (f *forwardConfig_t) forwardService(t ForwardType_t, remotePort, localPort string) {
+func (f *ForwardConfig_t) forwardService(t ForwardType_t, remotePort, localPort string) {
 	f.stateChange(FORWARD_STATE_STARTING, fmt.Sprintf("Forward service started. Type: %d, Remote port: %s, Local port: %s", t, remotePort, localPort))
 
 	for {
