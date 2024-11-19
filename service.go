@@ -32,6 +32,10 @@ func (f *ForwardConfig_t) Close() {
 	if f.client != nil {
 		f.client.Close()
 	}
+
+	if f.localListener != nil {
+		f.localListener.Close()
+	}
 }
 
 func (f *ForwardConfig_t) forwardService(t ForwardType_t, remotePort, localPort string) {

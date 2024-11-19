@@ -15,6 +15,7 @@ type ForwardConfig_t struct {
 	eventNotify chan StateEvent_t
 
 	client *ssh.Client
+	localListener *net.Listener
 }
 
 func CreateForward() *ForwardConfig_t {

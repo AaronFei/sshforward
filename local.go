@@ -28,6 +28,9 @@ func (f *ForwardConfig_t) remoteForwardToLocalListen(localPort, remotePort strin
 	if err != nil {
 		return fmt.Errorf("Failed to listen on local port. Error: %v", err)
 	}
+
+	f.localListener = &listener
+
 	defer listener.Close()
 
 	f.stateChange(FORWARD_STATE_SSH_CONNECTED, fmt.Sprintf("Listening on localhost:%s <-> %s:%s", localPort, tunnelAddr, remotePort))
