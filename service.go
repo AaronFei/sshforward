@@ -34,7 +34,7 @@ func (f *ForwardConfig_t) Close() {
 	}
 
 	if f.localListener != nil {
-		f.localListener.Close()
+		(*f.localListener).Close()
 	}
 }
 
