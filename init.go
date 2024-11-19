@@ -2,6 +2,7 @@ package sshforward
 
 import (
 	"sync"
+	"net"
 
 	"golang.org/x/crypto/ssh"
 )
