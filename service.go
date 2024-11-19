@@ -1,48 +1,90 @@
 package sshforward
 
 import (
-	"context"
+	"fmt"
 	"net"
-	"sync"
-
-	"golang.org/x/crypto/ssh"
+	"time"
 )
 
-type ForwardConfig_t struct {
-	state forwardState_t
-	wg    sync.WaitGroup
+type ForwardType_t int
 
-	sshConfig   *ssh.ClientConfig
-	tunnelAddr  string
-	eventNotify chan StateEvent_t
+const (
+	FORWARD_TYPE_LOCAL_TO_REMOTE_LISTEN ForwardType_t = iota
+	FORWARD_TYPE_REMOTE_TO_LOCAL_LISTEN
+)
 
-	client        *ssh.Client
-	localListener *net.Listener
-
-	ctx    context.Context
-	cancel context.CancelFunc
+func (f *ForwardConfig_t) Wait() {
+	f.wg.Wait()
 }
 
-func CreateForward() *ForwardConfig_t {
-	ctx, cancel := context.WithCancel(context.Background())
-	return &ForwardConfig_t{
-		state: FORWARD_STATE_NONE,
-		wg:    sync.WaitGroup{},
+func (f *ForwardConfig_t) Service(t ForwardType_t, remotePort, localPort string) {
+	if f.state != FORWARD_STATE_CONFIGURED || f.state == FORWARD_STATE_STOPPED {
+		f.stateChange(FORWARD_STATE_ERROR, fmt.Sprintf("Not at configured state or stopped state"))
+		return
+	}
 
-		sshConfig:   nil,
-		tunnelAddr:  "",
-		eventNotify: make(chan StateEvent_t, 10),
+	f.wg.Add(1)
 
-		client: nil,
+	go f.forwardService(t, remotePort, localPort)
+}
 
-		ctx:    ctx,
-		cancel: cancel,
+func (f *ForwardConfig_t) Close() {
+	f.cancel()
+
+	if f.client != nil {
+		f.client.Close()
+	}
+
+	if f.localListener != nil {
+		(*f.localListener).Close()
 	}
 }
 
-func (f *ForwardConfig_t) ConfigTunnel(sshConfig *ssh.ClientConfig, tunnelAddr string, tunnelPort string) {
-	f.sshConfig = sshConfig
-	f.tunnelAddr = tunnelAddr + ":" + tunnelPort
+func (f *ForwardConfig_t) forwardService(t ForwardType_t, remotePort, localPort string) {
+	f.stateChange(FORWARD_STATE_STARTING, fmt.Sprintf("Forward service started. Type: %d, Remote port: %s, Local port: %s", t, remotePort, localPort))
 
-	f.stateChange(FORWARD_STATE_CONFIGURED, "")
+	for {
+		var err error = nil
+
+		if t == FORWARD_TYPE_REMOTE_TO_LOCAL_LISTEN {
+			if !localPortAvailable(localPort) {
+				f.stateChange(FORWARD_STATE_SKIP, fmt.Sprintf("Local port %s is not available for listening", localPort))
+				return
+			}
+		}
+
+		switch t {
+		case FORWARD_TYPE_LOCAL_TO_REMOTE_LISTEN:
+			err = f.localForwardToRemoteListen(remotePort, localPort)
+		case FORWARD_TYPE_REMOTE_TO_LOCAL_LISTEN:
+			err = f.remoteForwardToLocalListen(localPort, remotePort)
+		}
+
+		if err == nil {
+			f.stateChange(FORWARD_STATE_STOPPED, "")
+			break
+		}
+
+		if f.ctx.Err() != nil {
+			f.stateChange(FORWARD_STATE_STOPPED, fmt.Sprintf("Forward service stopped. Error: %v", f.ctx.Err()))
+			break
+		}
+
+		f.stateChange(FORWARD_STATE_RETRY, fmt.Sprintf("Forward service failed. Retry in 10 seconds. Error: %v", err))
+		time.Sleep(10 * time.Second)
+	}
+}
+
+func localPortAvailable(localPort string) bool {
+	l, err := net.Listen("tcp", "localhost:"+localPort)
+
+	if l != nil {
+		defer l.Close()
+	}
+
+	if err != nil {
+		return false
+	}
+
+	return true
 }
