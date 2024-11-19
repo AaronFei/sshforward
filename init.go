@@ -1,8 +1,9 @@
 package sshforward
 
 import (
-	"sync"
+	"context"
 	"net"
+	"sync"
 
 	"golang.org/x/crypto/ssh"
 )
@@ -15,11 +16,15 @@ type ForwardConfig_t struct {
 	tunnelAddr  string
 	eventNotify chan StateEvent_t
 
-	client *ssh.Client
+	client        *ssh.Client
 	localListener *net.Listener
+
+	ctx    context.Context
+	cancel context.CancelFunc
 }
 
 func CreateForward() *ForwardConfig_t {
+	ctx, cancel := context.WithCancel(context.Background())
 	return &ForwardConfig_t{
 		state: FORWARD_STATE_NONE,
 		wg:    sync.WaitGroup{},
@@ -29,6 +34,9 @@ func CreateForward() *ForwardConfig_t {
 		eventNotify: make(chan StateEvent_t, 10),
 
 		client: nil,
+
+		ctx:    ctx,
+		cancel: cancel,
 	}
 }
 
