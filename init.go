@@ -13,6 +13,8 @@ type ForwardConfig_t struct {
 	sshConfig   *ssh.ClientConfig
 	tunnelAddr  string
 	eventNotify chan StateEvent_t
+
+	client *ssh.Client
 }
 
 func CreateForward() *ForwardConfig_t {
@@ -23,6 +25,8 @@ func CreateForward() *ForwardConfig_t {
 		sshConfig:   nil,
 		tunnelAddr:  "",
 		eventNotify: make(chan StateEvent_t, 10),
+
+		client: nil,
 	}
 }
 

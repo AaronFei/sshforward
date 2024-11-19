@@ -17,6 +17,8 @@ func (f *ForwardConfig_t) remoteForwardToLocalListen(localPort, remotePort strin
 		return fmt.Errorf("Failed to dial to remote SSH server. Error: %v", err)
 	}
 
+	f.client = client
+
 	defer client.Close()
 
 	localAddr := "localhost:" + localPort

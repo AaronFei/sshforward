@@ -18,6 +18,8 @@ func (f *ForwardConfig_t) localForwardToRemoteListen(remotePort, localPort strin
 		return fmt.Errorf("Failed to dial to remote SSH server. Error: %v", err)
 	}
 
+	f.client = client
+
 	defer client.Close()
 
 	tunnelAddrWithoutPort := tunnelAddr[:strings.LastIndex(tunnelAddr, ":")]

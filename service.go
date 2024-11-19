@@ -28,6 +28,12 @@ func (f *ForwardConfig_t) Service(t ForwardType_t, remotePort, localPort string)
 	go f.forwardService(t, remotePort, localPort)
 }
 
+func (f *ForwardConfig_t) Close() {
+	if f.client != nil {
+		f.client.Close()
+	}
+}
+
 func (f *ForwardConfig_t) forwardService(t ForwardType_t, remotePort, localPort string) {
 	f.stateChange(FORWARD_STATE_STARTING, fmt.Sprintf("Forward service started. Type: %d, Remote port: %s, Local port: %s", t, remotePort, localPort))
 
